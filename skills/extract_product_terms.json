@@ -1,0 +1,9 @@
+{
+  "id": "extract_product_terms",
+  "name": "从产品说明书抽取要素",
+  "trigger": "上传产品 PDF 时触发（产品管理页上传、批量入库脚本）",
+  "input": "PDF 字节流",
+  "output": "产品表一行：额度/利率/期限/用途/区域/行业/担保/还款/准入条件及数字来源条款",
+  "entry": "finmatch.extractor.extract_product",
+  "contract": "只读第三至第六条表格；导语、附章、第十至第十六条的数字不入库；缺要素则整份拒绝，不写半条记录"
+}

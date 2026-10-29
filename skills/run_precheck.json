@@ -1,0 +1,9 @@
+{
+  "id": "run_precheck",
+  "name": "执行准入预审",
+  "trigger": "已取得事实、产品表非空时触发",
+  "input": "需求(金额/期限/用途/担保)、事实、已入库产品",
+  "output": "每个已入库产品的结论、全部不符原因、未获取项、逐条规则明细",
+  "entry": "finmatch.precheck.precheck_all",
+  "contract": "18 条规则按 config/rules.json 的顺序输出；只读白名单列；有硬性不符为准入不符，仅有未获取为需人工复核"
+}

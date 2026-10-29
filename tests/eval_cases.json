@@ -1,0 +1,35 @@
+[
+  {"id": "R01", "name": "基础预审：必填齐全，默认利率优先", "turns": [
+    {"say": "华峻精密制造有限公司定了，流动资金 100 万，期限 12 个月。帮我配产品。",
+     "expect": {"state": "done", "eligible": ["税信e贷", "日常经营贷", "快e周转"], "flow_includes": ["FETCH", "PRECHECK", "RANK", "REFLECT", "SAVE"]}}]},
+  {"id": "R02", "name": "多轮记忆：后一句只改说到的条件", "turns": [
+    {"say": "华峻精密制造有限公司定了，流动资金 100 万，期限 12 个月。帮我配产品。", "expect": {"state": "done"}},
+    {"say": "这单别按利率排了，改成额度优先。", "expect": {"state": "done", "contains": ["额度优先"]}}]},
+  {"id": "R03", "name": "期限只认个月：天、年先追问，再补个月", "turns": [
+    {"say": "华峻精密制造有限公司要流动资金 100 万，期限 360 天", "expect": {"state": "ask", "contains": ["个月"], "flow_excludes": ["FETCH"]}},
+    {"say": "期限 1 年", "expect": {"state": "ask"}},
+    {"say": "期限 12 个月", "expect": {"state": "done"}}]},
+  {"id": "R04", "name": "缺必填先追问，不取数", "turns": [
+    {"say": "华峻精密制造有限公司要贷款", "expect": {"state": "ask", "contains": ["融资金额", "用途"], "flow_excludes": ["FETCH"]}}]},
+  {"id": "R05", "name": "用途用词完全一致：周转资金≠流动资金", "turns": [
+    {"say": "华峻精密制造有限公司要周转资金 100 万，12 个月", "expect": {"state": "done", "eligible_includes": ["制造业周转贷"]}}]},
+  {"id": "R06", "name": "条款里没有的用途：暂无合适产品", "turns": [
+    {"say": "华峻精密制造有限公司要采购原材料 100 万，12 个月", "expect": {"state": "done", "eligible_count": 0, "contains": ["暂无合适产品"]}}]},
+  {"id": "R07", "name": "公司未收录：提示无公司数据并要数据源", "turns": [
+    {"say": "云岚信息科技集团有限公司，流动资金 50 万，6 个月", "expect": {"contains": ["无公司数据", "数据源"], "flow_excludes": ["FETCH"]}}]},
+  {"id": "R08", "name": "未授权：先授权再继续", "turns": [
+    {"say": "诚金金属制品有限公司要流动资金 100 万，12 个月", "expect": {"state": "unauthorized", "flow_excludes": ["FETCH"]}},
+    {"say": "已授权", "expect": {"state": "done", "flow_includes": ["FETCH"]}}]},
+  {"id": "R09", "name": "多个准入产品：直接确认，名单带区间且标明不是授信审批结果", "turns": [
+    {"say": "华峻精密制造有限公司定了，流动资金 100 万，期限 12 个月。帮我配产品。", "expect": {"state": "done", "contains": ["准入符合 3 个", "额度 ", "年化利率 ", "产品库区间，不是授信审批结果"], "not_contains": ["选定", "建议批准"]}},
+    {"say": "确认", "expect": {"contains": ["已保存方案"]}}]},
+  {"id": "R10", "name": "多会话隔离：另一个会话看不到本会话的企业和条件", "turns": [
+    {"say": "华峻精密制造有限公司要流动资金 100 万，12 个月", "expect": {"state": "done"}},
+    {"sid": "other", "say": "期限 12 个月", "expect": {"state": "ask", "contains": ["企业名称"], "not_contains": ["华峻"]}}]},
+  {"id": "R11", "name": "超长对话：40 轮后仍记得条件，旧消息被压缩而不是崩溃", "turns": [
+    {"say": "华峻精密制造有限公司要流动资金 100 万，12 个月", "expect": {"state": "done"}},
+    {"say": "你好，介绍一下你能做什么", "repeat": 40, "expect": {"ctx_has": ["summary"]}},
+    {"say": "改成额度优先", "expect": {"state": "done", "contains": ["额度优先"]}}]},
+  {"id": "R12", "name": "超长输入：只处理前 4000 字，不崩溃", "turns": [
+    {"say": "华峻精密制造有限公司要流动资金 100 万，12 个月。备注：", "pad": 6000, "expect": {"state": "done"}}]}
+]

@@ -1,0 +1,94 @@
+schema_version: "1.0"
+submission:
+  topic_id: "05"
+  topic_name: "赛题05_企业智能融资匹配平台"
+  team_name: "CtrlShiftAI"
+  submission_name: "05_CtrlShiftAI_Agent大赛提交"
+  version: "v1.0"
+  submit_date: "2026-10-24"
+members:
+  - name: "张真菱"
+    role: "需求梳理与方案设计"
+    phone: "15577490370"
+    email: "493530054@qq.com"
+  - name: "彭可"
+    role: "Agent编排策略与结果校验"
+    phone: "13682641016"
+    email: "441469457@qq.com"
+  - name: "朱梦影"
+    role: "AI交互生成与页面调优"
+    phone: "17310808109"
+    email: "zhumengying072@163.com"
+  - name: "何桂兴"
+    role: "AI能力调度与流程联调"
+    phone: "13590804668"
+    email: "805662346@qq.com"
+contact:
+  primary_name: "张真菱"
+  primary_phone: "15577490370"
+  primary_email: "493530054@qq.com"
+code:
+  repo_url: "https://gitee.com/ctrlshiftai/no5"
+  commit_sha: "add5d7e84b02fff1b1e6e26b0488fcef694a0c33"
+  branch: "master"
+  is_private: false
+  archive_in_package: true
+demo_env:
+  type: "web"
+  os: "macOS / Linux"
+  runtime: "Python 3.9+（实测 Python 3.9.6）"
+  startup_command: "./start.sh"
+  access_url: "http://127.0.0.1:8000"
+  gpu_required: false
+  network_required: false
+  notes: "默认使用本地规则运行；配置 DEEPSEEK_API_KEY 并启用 DeepSeek 时需要外网。已实测 macOS + Python 3.9.6，Linux/Windows 未实测。"
+dependencies:
+  - name: "python"
+    version: "3.9+"
+external_services:
+  - name: "DeepSeek API（可选）"
+    purpose: "补全对话字段并解读预审结果；预审、排序与统计由本地代码完成。"
+    credential_required: true
+    credential_source: "环境变量或 .env 中的 DEEPSEEK_API_KEY"
+    offline_fallback: true
+    desensitization: "仅发送用户原话与结果摘要；不发送统一社会信用代码、法定代表人和明细。"
+llm_declaration:
+  - provider: "DeepSeek"
+    model: "deepseek-v4.1-flash"
+    usage: "对话字段补全与预审结果解读；不负责预审、排序或统计决策。"
+    data_sent: "用户原话与结果摘要；不包含统一社会信用代码、法定代表人和明细。"
+    temperature: 0.2
+third_party_components:
+  - name: "FastAPI"
+    version: "0.128.8"
+    license: "MIT"
+    usage: "提供后端 HTTP API 服务。"
+  - name: "pdfplumber"
+    version: "0.11.8"
+    license: "MIT"
+    usage: "抽取产品说明书 PDF 内容。"
+  - name: "httpx"
+    version: "0.28.1"
+    license: "BSD-3-Clause"
+    usage: "发送可选的 DeepSeek API 请求。"
+datasets_used:
+  official:
+    - "数据/公开测评集_含标准结果.xlsx（赛题组提供的公开测评集）"
+    - "数据/融资数据.sqlite、数据/产品/*.pdf（赛题组提供的企业融资数据及产品说明书）"
+    - "数据/06_非公开测试集_现场加试/01_非公开测评集_输入_现场提供.xlsx（现场提供的非公开测评集输入，不含标准结果）"
+  self_built: []
+  real_data_used: false
+attachments:
+  - "manifest.yaml"
+  - "README.md"
+  - "CtrlShiftAI_赛题05_团队与元信息表.xlsx"
+  - "自测结果/"
+  - "会话记录/"
+  - "CtrlShiftAI_赛题05_技术方案.md"
+  - "CtrlShiftAI_赛题05_测试报告.md"
+  - "CtrlShiftAI_赛题05_第三方组件与License声明.md"
+  - "CtrlShiftAI_赛题05_路演PPT.pptx"
+  - "CtrlShiftAI_赛题05_路演文字稿.docx"
+  - "CtrlShiftAI_赛题05_路演文字稿.md"
+  - "自测结果/CtrlShiftAI_赛题05_公开测评集逐题比对表.xlsx"
+  - "自测结果/CtrlShiftAI_赛题05_非公开测评集现场加试逐题结果.xlsx"

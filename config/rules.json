@@ -1,0 +1,65 @@
+{
+  "base_date": "2026-09-23",
+  "authorized_value": "已授权",
+  "rating_order": ["A", "B", "M", "C"],
+  "active_status": "在营",
+  "default_primary": "利率优先",
+  "max_recommend": 3,
+  "rate_note": "产品库区间，不是授信审批结果",
+  "subsidy_note": "可申请制造业贴息（尚未兑付）",
+  "subsidy_industry": "制造业",
+
+  "whitelist": {
+    "enterprise": ["enterprise_name", "founded_date", "business_status", "region", "industry", "data_authorization", "is_high_tech", "is_specialized", "invention_patent_count"],
+    "tax": ["tax_credit_rating", "taxpayer_type", "tax_arrears", "tax_paid_12m_wan"],
+    "social_security": ["insured_count", "social_security_arrears"],
+    "judicial": ["is_dishonest", "is_enforced"],
+    "financing_history": ["overdue_unsettled"]
+  },
+
+  "profile_display_only": {
+    "enterprise": ["enterprise_id", "credit_code", "legal_representative"],
+    "tax": ["rating_year", "vat_filing_status"],
+    "social_security": ["latest_payment_month"],
+    "financing_history": ["facility_id", "product_name", "status", "lender", "disbursed_amount_wan", "guarantee_type", "disbursed_date", "maturity_date"]
+  },
+
+  "sensitive_columns": ["credit_code", "legal_representative"],
+
+  "rules": [
+    {"id": "business_status", "label": "经营状态不符", "source": "工商"},
+    {"id": "tax_arrears", "label": "税务欠缴", "source": "税务"},
+    {"id": "ss_arrears", "label": "社保欠缴", "source": "社保"},
+    {"id": "overdue", "label": "逾期未结清", "source": "历史融资"},
+    {"id": "amount_low", "label": "需求金额低于下限", "source": "需求"},
+    {"id": "amount_high", "label": "需求金额高于上限", "source": "需求"},
+    {"id": "term", "label": "期限不在产品区间", "source": "需求"},
+    {"id": "purpose", "label": "用途不符", "source": "需求"},
+    {"id": "region", "label": "区域不符", "source": "工商"},
+    {"id": "industry", "label": "行业不符", "source": "工商"},
+    {"id": "rating", "label": "纳税等级不足", "source": "税务"},
+    {"id": "insured", "label": "参保人数不足", "source": "社保"},
+    {"id": "founded", "label": "成立年限不足", "source": "工商"},
+    {"id": "tax_paid", "label": "纳税额不足", "source": "税务"},
+    {"id": "dishonest", "label": "失信限制", "source": "司法"},
+    {"id": "tech", "label": "科技资质不符", "source": "工商"},
+    {"id": "taxpayer", "label": "纳税人资格不符", "source": "税务"},
+    {"id": "guarantee", "label": "担保方式不符", "source": "需求"}
+  ],
+
+  "condition_names": {
+    "经营状态": "business_status",
+    "税务欠缴": "tax_arrears",
+    "社保欠缴": "ss_arrears",
+    "逾期": "overdue",
+    "纳税等级": "rating",
+    "参保人数": "insured",
+    "成立年限": "founded",
+    "纳税额": "tax_paid",
+    "失信限制": "dishonest",
+    "科技资质": "tech",
+    "纳税人资格": "taxpayer"
+  },
+
+  "excluded_columns_note": "enterprise.employee_count、approved_date、registered_address、business_scope、industry_code、group_name、external_score、enterprise_type、paid_in_capital_wan、authorization_no；tax.revenue_wan、prior_year_taxable_income_wan、tax_paid_24m_wan、tax_arrears_balance_wan、tax_credit_description；social_security.employee_count相关列（contribution_base_wan、pension_insured_count）；financing_history.ever_overdue、remark、loan_balance_wan、overdue_amount_wan；judicial.case_summary 及三张司法明细表，均不参与预审"
+}

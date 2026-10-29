@@ -1,0 +1,9 @@
+{
+  "id": "save_solution",
+  "name": "保存融资对接单",
+  "trigger": "预审完成自动建单；经理说确认/放弃时变更状态",
+  "input": "预审结果、经理动作",
+  "output": "方案（待确认/已确认/已放弃）及事件记录",
+  "entry": "finmatch.solutions",
+  "contract": "确认只保存预审结果，不提交贷款申请；刷新后状态保留"
+}

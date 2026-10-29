@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>企业智能融资匹配平台</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <h1>企业智能融资匹配平台</h1>
+  <div class="role-switch" id="roleSwitch">
+    <span>当前角色：</span>
+    <button data-role="manager">客户经理</button>
+    <button data-role="gov">政府人员</button>
+  </div>
+  <span class="sub">预审结果仅供参考，不是授信审批；确认只保存融资对接单，不提交贷款申请。基准日 2026-09-23，金额单位：万元</span>
+</header>
+<nav id="nav">
+  <a href="#products" data-p="products">产品管理</a>
+  <a href="#chat" data-p="chat">对话工作台</a>
+  <a href="#profile" data-p="profile">企业画像</a>
+  <a href="#gov" data-p="gov">政府视图</a>
+  <a href="#report" data-p="report">报告</a>
+  <a href="#solutions" data-p="solutions">方案列表</a>
+  <a href="#system" data-p="system">记忆与技能</a>
+</nav>
+<main>
+  <section id="products" class="page">
+    <h2>产品管理</h2>
+    <p class="hint">上传产品说明书 PDF，服务在上传时抽取要素写入产品表；预审只读产品表。数字只取第三条至第六条，导语、附章不用。同一产品编号再次上传会覆盖。</p>
+    <div class="row">
+      <input type="file" id="pdfs" accept="application/pdf" multiple>
+      <button id="btnUpload">上传产品PDF</button>
+      <!-- <button id="btnSamples" class="ghost">上传数据包内 11 份说明书</button> -->
+      <a href="/api/products/export.csv" class="btn ghost">导出产品表 CSV</a>
+    </div>
+    <div id="uploadMsg" class="msg"></div>
+    <div id="productTable"></div>
+  </section>
+
+  <section id="chat" class="page">
+    <div class="chat-layout">
+      <aside class="convs">
+        <div class="convs-head"><b>会话记录</b><span id="convCount" class="small"></span></div>
+        <button id="btnNew">＋ 新建会话</button>
+        <input id="convSearch" placeholder="搜索公司或日期">
+        <ul id="convList"></ul>
+      </aside>
+      <div class="chat-main">
+        <div class="chat-head">
+          <div><div id="convTitle" class="conv-title">新会话</div><div id="convMeta" class="small"></div></div>
+          <div class="small">模型 deepseek-v4.1-flash</div>
+        </div>
+        <div id="log"></div>
+        <div class="composer">
+          <textarea id="msg" rows="2" placeholder="例如：华峻精密制造有限公司要流动资金 100 万，期限 12 个月（Enter 发送，Shift+Enter 换行）"></textarea>
+          <button id="btnSend">发送</button>
+        </div>
+        <div class="row chips">
+          <!-- <button class="ghost quick" data-q="确认">确认</button>
+          <button class="ghost quick" data-q="放弃">放弃</button>
+          <button class="ghost quick" data-q="额度优先">改为额度优先</button> -->
+          <!-- <button class="ghost quick" data-q="打开政府视图">政府视图</button> -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="profile" class="page">
+    <h2>企业画像</h2>
+    <div class="row"><input id="pname" size="30" placeholder="企业名称（须与工商登记完全一致）"><button id="btnProfile">查看</button></div>
+    <div id="profileBody"></div>
+  </section>
+
+  <section id="gov" class="page">
+    <h2>政府视图</h2>
+    <p class="hint">只统计「已确认」方案；待确认和已放弃不计入。</p>
+    <div id="govBody"></div>
+  </section>
+
+  <section id="report" class="page">
+    <h2>分析报告</h2>
+    <div id="reportBody"></div>
+  </section>
+
+  <section id="solutions" class="page">
+    <h2>方案列表</h2>
+    <div class="row">
+      <select id="solFilter"><option value="">全部</option><option>待确认</option><option>已确认</option><option>已放弃</option></select>
+      <button id="btnSolRefresh" class="ghost">刷新</button>
+    </div>
+    <div id="solBody"></div>
+  </section>
+
+  <section id="system" class="page">
+    <h2>记忆与技能</h2>
+    <h3>记忆（可查看、纠正、清除）</h3>
+    <div id="memBody"></div>
+    <div class="row"><input id="mkey" placeholder="键"><input id="mval" placeholder="值" size="40"><button id="btnMemSave">保存/纠正</button><button id="btnMemClear" class="danger">清除全部记忆</button></div>
+    <h3>Skill</h3>
+    <div id="skillBody"></div>
+  </section>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

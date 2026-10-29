@@ -1,0 +1,9 @@
+{
+  "id": "collect_gov_data",
+  "name": "调取政务数据",
+  "trigger": "对话要素齐全、企业名称与库内完全一致后触发",
+  "input": "企业名称或 enterprise_id",
+  "output": "五类数据（工商、税务、社保、司法、历史融资）的白名单事实及来源字段",
+  "entry": "finmatch.govdata.TOOLS",
+  "contract": "分次调用；授权不是「已授权」时只返回工商，其余四类拒绝读取；调用带超时和重试，失败来源按未获取降级"
+}

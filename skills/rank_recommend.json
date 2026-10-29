@@ -1,0 +1,9 @@
+{
+  "id": "rank_recommend",
+  "name": "排序推荐",
+  "trigger": "预审完成后触发",
+  "input": "预审结果、主条件",
+  "output": "最多 3 个推荐卡（额度区间、利率区间、担保、还款、贴息标注）",
+  "entry": "finmatch.ranking.rank",
+  "contract": "利率优先：利率上限、额度上限、编号；额度优先：额度上限降序、利率上限、编号"
+}
