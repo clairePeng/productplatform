@@ -1,5 +1,6 @@
 """FastAPI 服务：六个页面对应的接口。启动：.venv/bin/python -m uvicorn finmatch.server:app --port 8080"""
 import glob
+import logging
 import os
 
 from typing import Optional
@@ -14,6 +15,9 @@ from .agent import AGENT
 from .extractor import ExtractionError
 
 MAX_UPLOAD = 20 * 1024 * 1024
+
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.getLogger("finmatch.extractor").setLevel(logging.INFO)
 
 app = FastAPI(title="企业智能融资匹配平台")
 db.init_db()

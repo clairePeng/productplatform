@@ -4,9 +4,12 @@
 """
 import hashlib
 import io
+import logging
 import re
 
 from . import config
+
+log = logging.getLogger(__name__)
 
 CN_NUM = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10}
 HEADING_RE = re.compile(r"^(第([一二三四五六七八九十百]+)条|附章|导语)")
@@ -65,6 +68,8 @@ def _layout(pdf):
             heads.append(payload)
         else:
             tables.append({"clause": clause["num"], "label": clause["label"], "rows": payload})
+    log.info("heads: %s", heads)
+    log.info("tables: %s", tables)
     return heads, tables, pdf
 
 

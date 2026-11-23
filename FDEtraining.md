@@ -1,16 +1,5 @@
 我先快速看一下这个工程的结构,再结合 FDE 的要求给出建议。
 
-Read 
-Completed with input: {
-  "path": "/Users/claire/no5/src/05_productplatform"
-}
-
-Ran terminal command: cd /Users/claire/no5 && ls; cat README* 2>/dev/null | head -60; git --no-pager log --oneline | head -10
-
-Ran terminal command: head -50 题目说明.md; echo ----; head -80 CtrlShiftAI_赛题05_技术方案.md; echo ----; ls finmatch skills scripts config runtime tests; wc -l finmatch/*.py | tail -20
-
-Ran terminal command: grep -E "^#{1,3} " CtrlShiftAI_赛题05_技术方案.md | head -50; ls finmatch skills scripts config runtime tests | head -80; cat 部署说明.md 2>/dev/null | head -5; cat requirements.txt
-
 这个项目是"企业智能融资匹配平台"(银行公司金融场景的 Agent 系统):PDF 抽取 → 对话录需求 → 调政务数据 → 18 条规则预审 → 排序推荐。它是一个很好的 FDE 练习素材,因为它有真实业务、数据、规则、LLM、工具调用和交付物。
 
 ## 一、FDE 应该了解到什么程度
@@ -79,10 +68,9 @@ Ran terminal command: wc -l finmatch/*.py config/* skills/*; head -c 1500 config
 ### 第 1 周:读懂并跑通
 - [ ] **W1-1 跑起来**:按`部署说明`执行 `start.sh`,再跑 `pytest tests/`。*产出*:一份启动记录,写下遇到的坑。
 - [ ] **W1-2 走 5 个对话**:覆盖正常推荐、缺必填项追问、条件增量修改、未授权、政务数据失败。*产出*:每个场景的输入、输出、日志截图。
-- [ ] **W1-3 追一次 trace**:选一个企业,从 `agent.py` 追到 `precheck.py`,再追到 `traces` 表。*产出*:一条"请求→LLM→工具→规则→结论"的时序图。
+- [ ] **W1-3 追一次 trace**:选一个企业,从 `agent.py` 追到 `precheck.py`,再追到 `traces` 表。*产出*:一条"请g求→LLM→工具→规则→结论"的时序图。
 - [ ] **W1-4 区分 LLM 和代码**:列表标注 `nlu.py`、`llm.py`、precheck、ranking 各自是否依赖模型,并写出理由。*产出*:1 页文档。
 - [ ] **W1-5 业务复述**:不看稿,用 3 分钟讲清楚业务、痛点和"条款优先于导语"。
-
 ### 第 2 周:动手改造(每项都要先写测试,再改,再跑回归)
 - [ ] **W2-1 新规则(第 19 条)**:例如"成立年限"或"纳税额下限"。改 `config/rules.json`、precheck 和白名单,补解释文案,在 `eval_cases.json` 加用例。
 - [ ] **W2-2 新 tool + skill**:例如"产品对比"。在 `tools.py` 注册,并新增 `skills/*.json`。
@@ -131,3 +119,103 @@ Ran terminal command: wc -l finmatch/*.py config/* skills/*; head -c 1500 config
 这个项目最适合练"把一个已有 Agent 系统改到适配新客户"。所以 W2-1、W2-4、W3-1、W3-2 最重要,优先做。
 
 另外,你标记的 `FDEtraining.md` 在 `.pytest_cache` 里,这个目录会被 pytest 清理,建议挪走。需要的话,我可以把这份清单整理成放在项目根目录的 Markdown 文件。
+
+---
+
+# 练习产出记录
+
+## W1-3 追一次 trace(已完成)
+
+**样本**:输入「华峻精密制造有限公司要流动资金 100 万,12 个月」,企业 `ENT_001`,产品表为 `数据/产品/` 下 11 份 PDF 入库。用临时库 `FIN_WORK_DB=/tmp/w13.sqlite` 跑,没有污染 `runtime/`。
+
+### 1. 调用链(代码位置)
+
+| 阶段 | 代码 | 做什么 | 谁做 |
+|---|---|---|---|
+| 入口 | [`Agent.handle`](finmatch/agent.py) → `_begin` | 新建 `Trace` 和状态机 `Flow`,写入 `CURRENT`(让 LLM 层把 token 记到本回合) | 代码 |
+| PARSE | `_handle` → `nlu.parse_sentence`、`llm.route`、`llm.extract` | 规则先解析句子;模型只"提议"意图和补槽位 | 规则 + 模型 |
+| ROUTE | `FL.make_plan` + `_adjudicate` | 生成计划;模型的提议由代码裁决 | 代码 |
+| COLLECT | `_demand` | 金额、期限、用途缺或歧义则追问并结束 | 代码 |
+| LOOKUP/AUTH | `call_tool(query_enterprise)` | 名称须完全一致;`data_authorization != 已授权` 则整单"待授权" | 代码 |
+| CONSISTENCY | `_demand` | 对话里的区域、行业与工商不一致则停止 | 代码 |
+| FETCH | `DATA.fetch` → 4 次 `call_tool` | 税务、社保、司法、历史融资,各自超时/重试/降级 | 代码 |
+| PRECHECK | `PRECHECK.run` → `precheck_all` → `_rule_results` | 对每个产品逐条规则判定,只读白名单列 | 代码 |
+| RANK | `RANKER.run` → `ranking.rank` | 只排"准入符合",利率优先按(利率上限, 额度上限, 编号),最多 3 个 | 代码 |
+| REFLECT | `REFLECT.check` | 自检,不通过回 PRECHECK 重做 1 次,仍不过则降级为"需人工复核" | 代码 |
+| SAVE | `solutions.create` | 生成方案,状态"待确认";写记忆 | 代码 |
+| EXPLAIN | `_explain` → `llm.summary` | 可选的自然语言解读,须通过校验才展示 | 模型 |
+| 收尾 | `_finish` → `obs.persist` | `trace.to_dict()` 写入 `traces` 表 | 代码 |
+
+### 2. 时序图
+
+```mermaid
+sequenceDiagram
+    participant U as 客户经理
+    participant A as Agent.handle
+    participant N as nlu(规则)
+    participant L as llm(DeepSeek)
+    participant G as govdata(工具)
+    participant P as precheck/ranking
+    participant D as SQLite traces
+
+    U->>A: 华峻…流动资金 100 万 12 个月
+    A->>A: Trace + Flow(START→PARSE)
+    A->>N: parse_sentence(企业/金额/期限/用途)
+    A->>L: route(意图提议)
+    L-->>A: 失败(401),回退规则
+    A->>A: ROUTE: make_plan(需求=1)
+    A->>G: query_enterprise → 命中 ENT_001,已授权
+    A->>G: query_tax / social_security / judicial / financing_history
+    A->>P: precheck_all(11 产品 × 15 条适用规则)
+    P-->>A: 3 个准入符合,8 个准入不符
+    A->>P: rank(利率优先) → 税信e贷、日常经营贷、快e周转
+    A->>A: REFLECT 自检通过 → SAVE 方案(待确认)
+    A->>L: summary(解读)
+    L-->>A: 失败(401),省略
+    A->>D: obs.persist(trace body)
+    A-->>U: 推荐名单 + 逐产品明细 + 依据
+```
+
+### 3. 本次真实的 trace 内容(`traces` 表)
+
+- 状态路径:`START → PARSE → ROUTE(需求1 操作0 查询0) → COLLECT → LOOKUP → AUTH → CONSISTENCY → FETCH → PRECHECK → RANK → REFLECT → SAVE → EXPLAIN → END(done)`
+- skills:调取政务数据、执行准入预审、排序推荐、保存融资对接单
+- tools:`query_enterprise`、`query_tax`、`query_social_security`、`query_judicial`、`query_financing_history`、`query_product_table`(11 条)、`rank_products`、`save_solution`、`llm_summary`(未通过,已省略)
+- spans 耗时:`llm_route` 263ms,`FETCH` 2ms,`PRECHECK/RANK/REFLECT` 0ms,`EXPLAIN` 261ms;`total_ms` 539
+- rules(命中口径):用途不符 6 个产品、行业不符 3、金额低于下限 2、科技资质不符 2、参保不足 1、区域不符 1;排序=利率优先
+- 表行:`traces(trace_id, session_id, at, total_ms, prompt_tokens, completion_tokens, cost_cny, status, error_node, body)`,`body` 约 3.9KB 的完整 JSON
+
+复查办法:
+
+```sql
+-- 用临时库
+sqlite3 /tmp/w13.sqlite "select trace_id,status,total_ms,cost_cny from traces order by at desc limit 5"
+-- 或在代码里: finmatch.obs.get_trace(trace_id)
+```
+
+### 4. 一个产品的结论是怎么追到字段的
+
+**税金e贷 → 准入不符:参保人数不足**
+
+| 规则 | 结果 | 依据字段 |
+|---|---|---|
+| `insured` | fail:参保 48 人 < 要求 50 人 | `social_security.insured_count`(来源:社保) |
+| 其余 14 条 | pass | 见 `details` |
+
+对比 **税信e贷 → 准入符合**:同样是 48 人,但该产品要求 10 人,所以通过。差异来自产品表 `conditions.insured.value`,不是企业数据。
+追"为什么没被推荐"的步骤:`results[i].reasons` → `details[].rule` → `fields` → `facts` 白名单 → 对应 `govdata.query_*`。
+
+### 5. 我从这次 trace 里发现的问题(值得你继续验证)
+
+1. **模型调用 HTTP 401,但 trace 状态是 `ok`**。`.env` 里的 DeepSeek key 无效,`llm_route` 和 `llm_summary` 都失败了,系统靠规则解析和"省略解读"完成,**业务结果不受影响**,这正是"LLM 提议、代码裁决"的设计收益。但 [`obs._status`](finmatch/obs.py) 只看 `error`/`degraded`/"降级",模型失败没被记成 `degraded`,运维看板上会显示全绿。这是一个可改进点(可作为 W2-5 的素材)。
+2. **失败调用仍然计费**。`usage_source=estimate`,失败的请求也被估算成本(`cost_cny=0.000778`),口径偏保守,需要和客户确认。
+3. **产品入库是前置条件**。产品表为空时,流程会走到 FETCH 才报"产品表为空",前面已经白查了 5 次政务数据。可以把产品表检查前移。
+4. **输入内容会发给外部模型**。企业名称随 `llm.route` 发给 DeepSeek 接口(规则里写"本地,不外送"只在 LLM 关闭时成立)。对银行客户,这是合规问询的高频点。
+5. `PRECHECK/RANK` 耗时几乎为 0ms,说明 11 个产品时瓶颈不在计算;W3-1 压测时应重点看 LLM 和上下文。
+
+### 6. 自检
+- [ ] 不看这份记录,能口述 13 个状态的顺序及哪些会提前 END
+- [ ] 能指出 `_demand` 里哪 3 个出口不会生成方案(追问、未收录、待授权/不一致)
+- [ ] 能解释为什么 `Facts.get` 要用白名单(防止越权读列,如 `credit_code`)
+
+- [x] **W1-3 追一次 trace**:已完成。下一项:W1-4 区分 LLM 和代码。
